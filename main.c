@@ -1,4 +1,5 @@
 #include "./linked-list/linked-list.h"
+#include "./ring-buffer/ring-buffer.h"
 #include "./stack/stack.h"
 #include <stdio.h>
 
@@ -37,6 +38,21 @@ int main(void) {
 
   printf("size: %zu\n", s_size(s));
   s_destroy(s);
+
+  RingBuffer *rb = rb_create(5, 1.5);
+
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 16});
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 15});
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 14});
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 13});
+  RBValueOut out_rb = rb_deque(rb);
+  out_rb = rb_deque(rb);
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 12});
+  rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 11});
+
+  rb_print(rb);
+  printf("size: %zu\n", rb_length(rb));
+  rb_destroy(rb);
 
   return 0;
 }
