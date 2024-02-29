@@ -1,7 +1,12 @@
+#include "./heap/heap.h"
 #include "./linked-list/linked-list.h"
 #include "./ring-buffer/ring-buffer.h"
 #include "./stack/stack.h"
 #include <stdio.h>
+
+bool heap_cmp_fn(HeapValueIn val1, HeapValueIn val2) {
+  return val2.integer < val1.integer;
+}
 
 int main(void) {
 
@@ -39,20 +44,39 @@ int main(void) {
   printf("size: %zu\n", s_size(s));
   s_destroy(s);
 
-  RingBuffer *rb = rb_create(5, 1.5);
+  printf("\n");
+
+  RingBuffer *rb = rb_create(3, 2);
 
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 16});
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 15});
+  printf("rb_deque: %d\n", rb_deque(rb).integer);
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 14});
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 13});
-  RBValueOut out_rb = rb_deque(rb);
-  out_rb = rb_deque(rb);
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 12});
+  rb_print(rb);
+  printf("rb_deque: %d\n", rb_deque(rb).integer);
   rb_enqueue(rb, (RBValueIn){.type = RB_INTEGER, .integer = 11});
 
   rb_print(rb);
-  printf("size: %zu\n", rb_length(rb));
+  printf("length: %zu\n", rb_length(rb));
   rb_destroy(rb);
+
+  printf("\n");
+
+  Heap *hp = hp_create(4, heap_cmp_fn);
+
+  hp_push(hp, (HeapValueIn){.type = HP_INTEGER, .integer = 10});
+  hp_push(hp, (HeapValueIn){.type = HP_INTEGER, .integer = 11});
+  hp_push(hp, (HeapValueIn){.type = HP_INTEGER, .integer = 4});
+  hp_push(hp, (HeapValueIn){.type = HP_INTEGER, .integer = 5});
+  hp_push(hp, (HeapValueIn){.type = HP_INTEGER, .integer = 1});
+  hp_print(hp);
+  printf("hp_pop: %d\n", hp_pop(hp).integer);
+  printf("hp_pop: %d\n", hp_pop(hp).integer);
+
+  hp_print(hp);
+  hp_destroy(hp);
 
   return 0;
 }
