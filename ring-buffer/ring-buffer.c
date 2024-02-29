@@ -1,8 +1,8 @@
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define RING_BUFFER_ERROR_COUNT 1
 typedef enum { EMPTY_RING_BUFFER } RBError;
@@ -29,35 +29,38 @@ typedef struct {
 } RBValueOut;
 
 typedef struct RingBuffer {
-  float_t growth;
+  size_t growth;
   size_t size;
 
   size_t head;
   size_t tail;
+  size_t len;
 
   RBValueIn *data;
 } RingBuffer;
 
 // growth must be > 1, growth of 1 represents no growth
-RingBuffer *rb_create(size_t size, float_t growth) {
+RingBuffer *rb_create(size_t size, size_t growth) {
   RingBuffer *rb = malloc(sizeof(RingBuffer));
   if (!rb) {
     return NULL;
   }
   rb->head = 0;
   rb->tail = 0;
+  rb->len = 0;
   rb->size = size;
-  rb->growth = growth;
+  rb->growth = growth < 1 ? 1 : growth;
   rb->data = malloc(sizeof(RBValueIn) * size);
+  if (!rb->data) {
+    return NULL;
+  }
 
   return rb;
 }
 
-size_t rb_length(RingBuffer *rb) {
-  return (rb->tail - rb->head + rb->size) % rb->size;
-}
+size_t rb_length(RingBuffer *rb) { return rb->len; }
 
-size_t rb_empty(RingBuffer *rb) { return rb_length(rb) == 0; }
+size_t rb_empty(RingBuffer *rb) { return rb->len == 0; }
 
 void rb_destroy(RingBuffer *rb) {
   free(rb->data);
@@ -65,50 +68,50 @@ void rb_destroy(RingBuffer *rb) {
 }
 
 void rb_grow(RingBuffer *rb) {
-  if (rb->growth <= 1 || rb_length(rb) + 1 < rb->size) {
+  if (rb->len < (rb->size)) {
     return;
   }
 
   rb->size *= rb->growth;
-  rb->data = realloc(rb->data, rb->size);
+  rb->data = realloc(rb->data, rb->size * sizeof(RBValueIn));
 
-  // get the first element of data(data[0] corresponds to len - head)
-  // from i = elementIDX until head, data[len+i % new_size] = element
-  // new tail = len + head;
-  // this only happens if head != 0
   if (rb->head == 0) {
+    rb->tail = rb->len;
     return;
   }
 
-  size_t len = rb_length(rb);
-  for (int i = 0; i < (rb->head); i++) {
-    rb->data[(len + i) % rb->size] = rb->data[i];
+  size_t right_empty = rb->size - rb->head - 1;
+  if (right_empty < (rb->tail)) {
+    memcpy(&rb->data[rb->len], &rb->data[0], right_empty * sizeof(RBValueIn));
+    memcpy(&rb->data[0], &rb->data[right_empty],
+           (rb->tail - right_empty) * sizeof(RBValueIn));
+  } else {
+    memcpy(&rb->data[rb->len], &rb->data[0], rb->tail * sizeof(RBValueIn));
   }
-
-  rb->tail = (len + rb->head) % rb->size;
+  rb->tail = (rb->len + rb->head) % rb->size;
 }
 
-bool rb_enqueue(RingBuffer *rb, RBValueIn value) {
-  rb_grow(rb);
-
-  if ((rb->tail + 1) % rb->size == rb->head) {
+void rb_enqueue(RingBuffer *rb, RBValueIn value) {
+  if (rb->growth > 1) {
+    rb_grow(rb);
+  } else if (rb->tail == rb->head) {
     rb->head = (rb->head + 1) % rb->size;
+    rb->len--;
   }
+
   rb->data[rb->tail] = value;
   rb->tail = (rb->tail + 1) % rb->size;
-
-  return true;
+  rb->len++;
 }
 
 RBValueOut rb_deque(RingBuffer *rb) {
   RBValueOut out;
-  if (rb_length(rb) == 0) {
+  if (rb->len == 0) {
     out.error = &global_ring_buffer_errors[EMPTY_RING_BUFFER];
     return out;
   }
 
   RBValueIn node = rb->data[rb->head];
-  rb->head = (rb->head + 1) % rb->size;
 
   out.type = node.type;
   switch (out.type) {
@@ -120,12 +123,14 @@ RBValueOut rb_deque(RingBuffer *rb) {
     break;
   }
 
+  rb->head = (rb->head + 1) % rb->size;
+  rb->len--;
   return out;
 }
 
 void rb_print(RingBuffer *rb) {
   printf("[");
-  for (int i = 0; i < rb_length(rb); i++) {
+  for (int i = 0; i < (rb->len); i++) {
     if (i != 0) {
       printf(", ");
     }

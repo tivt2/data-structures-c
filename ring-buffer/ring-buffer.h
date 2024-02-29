@@ -1,7 +1,6 @@
 #ifndef RING_BUFFER
 #define RING_BUFFER
 
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -28,7 +27,7 @@ typedef struct {
 
 typedef struct RingBuffer RingBuffer;
 
-RingBuffer *rb_create(size_t size, float_t should_grow);
+RingBuffer *rb_create(size_t size, size_t should_grow);
 
 void rb_destroy(RingBuffer *rb);
 
@@ -36,7 +35,7 @@ size_t rb_length(RingBuffer *rb);
 
 bool rb_empty(RingBuffer *rb);
 
-bool rb_enqueue(RingBuffer *rb, RBValueIn value);
+void rb_enqueue(RingBuffer *rb, RBValueIn value);
 
 RBValueOut rb_deque(RingBuffer *rb);
 
