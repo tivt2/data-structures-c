@@ -52,6 +52,7 @@ RingBuffer *rb_create(size_t size, size_t growth) {
   rb->growth = growth < 1 ? 1 : growth;
   rb->data = malloc(sizeof(RBValueIn) * size);
   if (!rb->data) {
+    free(rb);
     return NULL;
   }
 
@@ -72,23 +73,26 @@ void rb_grow(RingBuffer *rb) {
     return;
   }
 
-  rb->size *= rb->growth;
-  rb->data = realloc(rb->data, rb->size * sizeof(RBValueIn));
+  size_t new_size = rb->size * rb->growth;
 
-  if (rb->head == 0) {
-    rb->tail = rb->len;
-    return;
+  RBValueIn *new_data = malloc(sizeof(RBValueIn) * new_size);
+  if (!new_data) {
+    perror("Memory allocation failed during buffer growth.\n");
+    exit(EXIT_FAILURE);
   }
 
-  size_t right_empty = rb->size - rb->head - 1;
-  if (right_empty < (rb->tail)) {
-    memcpy(&rb->data[rb->len], &rb->data[0], right_empty * sizeof(RBValueIn));
-    memcpy(&rb->data[0], &rb->data[right_empty],
-           (rb->tail - right_empty) * sizeof(RBValueIn));
-  } else {
-    memcpy(&rb->data[rb->len], &rb->data[0], rb->tail * sizeof(RBValueIn));
+  size_t elements_to_end = rb->size - rb->head;
+  memmove(new_data, &rb->data[rb->head], elements_to_end * sizeof(RBValueIn));
+  if (rb->head != 0) {
+    memmove(&new_data[elements_to_end], rb->data,
+            (rb->len - elements_to_end) * sizeof(RBValueIn));
   }
-  rb->tail = (rb->len + rb->head) % rb->size;
+
+  free(rb->data);
+  rb->data = new_data;
+  rb->size = new_size;
+  rb->head = 0;
+  rb->tail = rb->len;
 }
 
 void rb_enqueue(RingBuffer *rb, RBValueIn value) {
