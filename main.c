@@ -1,11 +1,21 @@
-#include "./heap/heap.h"
-#include "./linked-list/linked-list.h"
-#include "./ring-buffer/ring-buffer.h"
-#include "./stack/stack.h"
+#include "binary-tree/binary-tree.h"
+#include "heap/heap.h"
+#include "linked-list/linked-list.h"
+#include "ring-buffer/ring-buffer.h"
+#include "stack/stack.h"
 #include <stdio.h>
 
 bool heap_cmp_fn(HeapValueIn val1, HeapValueIn val2) {
   return val2.integer < val1.integer;
+}
+
+int binary_tree_cmp_fn(BinaryTreeValue val1, BinaryTreeValue val2) {
+  if (val1.integer == val2.integer) {
+    return 0;
+  } else if (val1.integer < val2.integer) {
+    return 1;
+  }
+  return -1;
 }
 
 int main(void) {
@@ -77,6 +87,31 @@ int main(void) {
 
   hp_print(hp);
   hp_destroy(hp);
+
+  printf("\n");
+
+  BinaryTree *bt = bt_create(binary_tree_cmp_fn);
+
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 10});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 8});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 16});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 20});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 17});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 18});
+  bt_insert(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 22});
+  bt_print(bt);
+  printf("\n");
+  bt_DFS_delete(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 16});
+  bt_print(bt);
+  printf("\n");
+  bt_DFS_delete(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 10});
+  bt_print(bt);
+  printf("\n");
+  bt_DFS_delete(bt, (BinaryTreeValue){.type = BT_INTEGER, .integer = 18});
+  bt_print(bt);
+
+  bt_destroy(bt);
+  printf("\n");
 
   return 0;
 }
