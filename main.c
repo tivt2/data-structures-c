@@ -3,7 +3,9 @@
 #include "linked-list/linked-list.h"
 #include "ring-buffer/ring-buffer.h"
 #include "stack/stack.h"
+#include "strings/strings.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 bool heap_cmp_fn(HeapValueIn val1, HeapValueIn val2) {
   return val2.integer < val1.integer;
@@ -111,7 +113,35 @@ int main(void) {
   bt_print(bt);
 
   bt_destroy(bt);
+
   printf("\n");
+
+  String *s1 = string("Foo", true);
+  String *s2 = string("Bar", true);
+
+  String *s3 = s_concat(s1, s2);
+  char *s3_raw = malloc(s_length(s3) + 1);
+  s_out(s3_raw, s3);
+  printf("%s\n", s3_raw);
+  free(s3_raw);
+
+  String *s4 = s_append(s1, "Baz");
+  char *s4_raw = malloc(s_length(s4) + 1);
+  s_out(s4_raw, s4);
+  printf("%s\n", s4_raw);
+  free(s4_raw);
+
+  String *s5 = s_slice(s4, 1, 5);
+  char *s5_raw = malloc(s_length(s5) + 1);
+  s_out(s5_raw, s5);
+  printf("%s\n", s5_raw);
+  free(s5_raw);
+
+  string_destroy(s1);
+  string_destroy(s2);
+  string_destroy(s3);
+  string_destroy(s4);
+  string_destroy(s5);
 
   return 0;
 }
