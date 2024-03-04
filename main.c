@@ -1,4 +1,5 @@
 #include "binary-tree/binary-tree.h"
+#include "hashtable/hashtable.h"
 #include "heap/heap.h"
 #include "linked-list/linked-list.h"
 #include "ring-buffer/ring-buffer.h"
@@ -159,6 +160,24 @@ int main(void) {
   trie_print(trie);
 
   trie_destroy(trie);
+
+  printf("\n");
+
+  HashTable *ht = ht_create(1);
+
+  ht_insert(ht, (HTEntry){.key = "foo", .value.integer = 0});
+  ht_insert(ht, (HTEntry){.key = "baz", .value.integer = 1});
+  ht_insert(ht, (HTEntry){.key = "bar", .value.integer = 2});
+  ht_insert(ht, (HTEntry){.key = "AAA", .value.integer = 3});
+  ht_print(ht);
+  HTEntry foo = ht_get(ht, "foo");
+  printf("ht_get(): [key: %s, val: %d]\n", foo.key, foo.value.integer);
+  ht_delete(ht, "bar");
+  ht_delete(ht, "AAA");
+  ht_delete(ht, "foo");
+  ht_print(ht);
+
+  ht_destroy(ht);
 
   return 0;
 }
