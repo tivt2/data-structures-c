@@ -4,6 +4,7 @@
 #include "ring-buffer/ring-buffer.h"
 #include "stack/stack.h"
 #include "strings/strings.h"
+#include "trie/trie.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -142,6 +143,22 @@ int main(void) {
   string_destroy(s3);
   string_destroy(s4);
   string_destroy(s5);
+
+  printf("\n");
+
+  Trie *trie = trie_create();
+
+  trie_insert(trie, "foo");
+  trie_insert(trie, "bas");
+  trie_insert(trie, "floor");
+  trie_insert(trie, "baz");
+  trie_print(trie);
+
+  trie_delete(trie, "foo");
+  trie_delete(trie, "baz");
+  trie_print(trie);
+
+  trie_destroy(trie);
 
   return 0;
 }
