@@ -1,4 +1,5 @@
 #include "binary-tree/binary-tree.h"
+#include "gap-buffer/gap-buffer.h"
 #include "hashtable/hashtable.h"
 #include "heap/heap.h"
 #include "linked-list/linked-list.h"
@@ -178,6 +179,41 @@ int main(void) {
   ht_print(ht);
 
   ht_destroy(ht);
+
+  printf("\n");
+
+  GapBuffer *buf = gap_buffer_create(32);
+
+  gap_buffer_insert(buf, "hello", 5);
+  gap_buffer_insert(buf, "l!", 2);
+
+  char str[15];
+  gap_buffer_str(buf, str, 15);
+  printf("%s\n", str);
+
+  gap_buffer_left(buf, 2);
+  gap_buffer_insert(buf, " wor", 4);
+
+  gap_buffer_str(buf, str, 15);
+  printf("%s\n", str);
+
+  gap_buffer_right(buf, 1);
+  gap_buffer_insert(buf, "d", 1);
+
+  gap_buffer_str(buf, str, 15);
+  printf("%s\n", str);
+
+  gap_buffer_delete_right(buf, 1);
+
+  gap_buffer_str(buf, str, 15);
+  printf("%s\n", str);
+
+  gap_buffer_delete_left(buf, 4);
+
+  gap_buffer_str(buf, str, 15);
+  printf("%s\n", str);
+
+  gap_buffer_destroy(buf);
 
   return 0;
 }
