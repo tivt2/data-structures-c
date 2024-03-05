@@ -25,6 +25,12 @@ typedef struct {
   HTNode **data;
 } HashTable;
 
+typedef struct {
+  HashTable *ht;
+  size_t pos;
+  HTNode *current_node;
+} HTIterator;
+
 bool ht_insert(HashTable *ht, HTEntry entry);
 
 HashTable *ht_create(size_t initial_capacity) {
@@ -197,19 +203,57 @@ bool ht_delete(HashTable *ht, char *key) {
   return false;
 }
 
-void ht_node_print(HTNode *node) {
-  printf("[key: %s, val: %d]\n", node->entry.key, node->entry.value.integer);
-
-  if (node->next) {
-    ht_node_print(node->next);
+HTIterator *ht_iterator(HashTable *ht) {
+  HTIterator *iter = malloc(sizeof(HTIterator));
+  if (!iter) {
+    return NULL;
   }
+  iter->ht = ht;
+  iter->pos = 0;
+  iter->current_node = NULL;
+  return iter;
 }
 
-void ht_print(HashTable *ht) {
-  for (size_t i = 0; i < (ht->capacity); i++) {
-    if (ht->data[i]) {
-      ht_node_print(ht->data[i]);
-    }
+bool ht_iterator_next(HTIterator *iter) {
+  if (iter == NULL || iter->ht == NULL) {
+    return false;
   }
-  printf("capacity: %zu\n", ht->capacity);
+
+  if (iter->current_node != NULL) {
+    if (iter->current_node->next) {
+      iter->current_node = iter->current_node->next;
+      return true;
+    }
+    iter->pos++;
+  }
+
+  while (iter->pos < (iter->ht->capacity)) {
+    if (iter->ht->data[iter->pos] != NULL) {
+      iter->current_node = iter->ht->data[iter->pos];
+      return true;
+    }
+    iter->pos++;
+  }
+
+  iter->current_node = NULL;
+  return false;
+}
+
+HTEntry ht_iterator_get(HTIterator *iter) {
+  if (iter == NULL || iter->current_node == NULL) {
+    return (HTEntry){.key = NULL, .value = 0};
+  }
+  return iter->current_node->entry;
+}
+
+void ht_iterator_destroy(HTIterator *ht_iter) { free(ht_iter); }
+
+void ht_print(HashTable *ht) {
+  HTIterator *iter = ht_iterator(ht);
+  while (ht_iterator_next(iter)) {
+    HTEntry entry = ht_iterator_get(iter);
+    printf("[key: %s, val: %d]\n", entry.key, entry.value.integer);
+  }
+
+  ht_iterator_destroy(iter);
 }

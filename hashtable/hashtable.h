@@ -16,6 +16,8 @@ typedef struct {
 
 typedef struct HashTable HashTable;
 
+typedef struct HTIterator HTIterator;
+
 HashTable *ht_create(size_t initial_capacity);
 
 void ht_destroy(HashTable *ht);
@@ -30,5 +32,13 @@ HTEntry ht_get(HashTable *ht, char *key);
 bool ht_delete(HashTable *ht, char *key);
 
 void ht_print(HashTable *ht);
+
+HTIterator *ht_iterator(HashTable *ht);
+
+bool ht_iterator_next(HTIterator *iter);
+
+HTEntry ht_iterator_get(HTIterator *iter);
+
+void ht_iterator_destroy(HTIterator *iter);
 
 #endif // !HASHMAP
